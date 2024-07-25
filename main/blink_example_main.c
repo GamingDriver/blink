@@ -7,6 +7,7 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 #include <stdio.h>
+#include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -91,14 +92,26 @@ static void configure_led(void)
 void app_main(void)
 {
 
-    /* Configure the peripheral according to the LED type */
+    uint16_t n = 125;
+    bool x = false;
     configure_led();
 
-    while (1) {
-        ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
+    while (true) {
+        if (n >= 1000 || x == true) {
+            x = true;
+            if (x == true && n > 125) {
+                n -= 25;
+            }
+            else
+                x = false;
+        }   
+        else {
+            n += 25;
+            x = false;
+        }
+        ESP_LOGI(TAG, "Turning the LED %s! Period = %d", s_led_state == true ? "ON" : "OFF",n*2);
         blink_led();
-        /* Toggle the LED state */
         s_led_state = !s_led_state;
-        vTaskDelay(CONFIG_BLINK_PERIOD / portTICK_PERIOD_MS);
+        vTaskDelay(n / portTICK_PERIOD_MS);
     }
 }
